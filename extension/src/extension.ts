@@ -10,9 +10,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Command to show dashboard
     let disposable = vscode.commands.registerCommand('code-karma.showDashboard', () => {
-        // We will open a webview or launch the external dashboard browser
-        // For now, let's just show a message. In the future this can open the Vite dashboard URL
-        vscode.window.showInformationMessage(`Your current Code Karma is: ${karmaEngine.getCurrentKarma()}`);
+        const dashboardUrl = vscode.Uri.parse('http://localhost:5173');
+        vscode.env.openExternal(dashboardUrl);
+        vscode.window.showInformationMessage(`Code Karma: ${karmaEngine.getCurrentKarma()} pts — opening dashboard...`);
     });
 
     context.subscriptions.push(disposable);
