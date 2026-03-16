@@ -13,23 +13,26 @@ function App() {
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=mksho'
   };
 
+  const mockData = [
+    currentUser,
+    { username: 'diana_debug', score: 850, rank: 'Code Deity', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=diana_debug' },
+    { username: 'alice_dev', score: 420, rank: 'Architecture Sage', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alice_dev' },
+    { username: 'bob_coder', score: 315, rank: 'Refactor Champion', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=bob_coder' },
+    { username: 'charlie_hacks', score: 40, rank: 'Code Wanderer', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=charlie_hacks' },
+  ];
+
   useEffect(() => {
-    // In a real app we would fetch from the backend
-    // fetch('http://localhost:3000/api/leaderboard')
-    //   .then(res => res.json())
-    //   .then(data => { setLeaderboard(data.data); setLoading(false); })
-    
-    // For now we'll simulate the fetch to ensure UI displays immediately
-    setTimeout(() => {
-      setLeaderboard([
-        currentUser,
-        { username: 'diana_debug', score: 850, rank: 'Code Deity', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=diana_debug' },
-        { username: 'alice_dev', score: 420, rank: 'Architecture Sage', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alice_dev' },
-        { username: 'bob_coder', score: 315, rank: 'Refactor Champion', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=bob_coder' },
-        { username: 'charlie_hacks', score: 40, rank: 'Code Wanderer', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=charlie_hacks' },
-      ].sort((a, b) => b.score - a.score));
-      setLoading(false);
-    }, 600);
+    fetch('http://localhost:3000/api/leaderboard')
+      .then(res => res.json())
+      .then(data => {
+        setLeaderboard(data.data.sort((a, b) => b.score - a.score));
+        setLoading(false);
+      })
+      .catch(() => {
+        // Backend not running — fall back to mock data so UI always works
+        setLeaderboard(mockData.sort((a, b) => b.score - a.score));
+        setLoading(false);
+      });
   }, []);
 
   return (
