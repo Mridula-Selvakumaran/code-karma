@@ -1,3 +1,20 @@
+/* Self-hosted Timeburner font */
+@font-face {
+  font-family: 'Timeburner';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/timeburner-normal.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Timeburner';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/timeburner-bold.woff') format('woff');
+}
+
 :root {
   --bg-color: #f8f8f8;
   --panel-bg: rgba(255, 255, 255, 0.78);
@@ -48,7 +65,7 @@ header {
 }
 
 h1 {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Timeburner', sans-serif;
   font-size: 3rem;
   font-weight: 600;
   color: #4285F4;
@@ -112,7 +129,7 @@ h1 {
 }
 
 .score-display {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Timeburner', sans-serif;
   font-size: 3.5rem;
   font-weight: 600;
   color: var(--neon-primary);
@@ -121,7 +138,7 @@ h1 {
 }
 
 .rank-badge {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Timeburner', sans-serif;
   background: rgba(66, 133, 244, 0.1);
   border: 1px solid rgba(66, 133, 244, 0.3);
   padding: 0.5rem 1.5rem;
@@ -195,7 +212,7 @@ h1 {
 }
 
 .section-title {
-  font-family: 'Orbitron', sans-serif;
+  font-family: 'Timeburner', sans-serif;
   font-size: 1.1rem;
   font-weight: 500;
   letter-spacing: 1.5px;
