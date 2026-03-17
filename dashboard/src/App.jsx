@@ -59,17 +59,17 @@ function App() {
           <div style={{ marginTop: '2rem', width: '100%', textAlign: 'left' }}>
             <h3 className="section-title">Achievements</h3>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-              <span style={{ background: 'rgba(244, 63, 94, 0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#f43f5e' }}>🧙 Refactor Wizard</span>
-              <span style={{ background: 'rgba(6, 182, 212, 0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#06b6d4' }}>🐛 Bug Hunter</span>
-              <span style={{ background: 'rgba(139, 92, 246, 0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#8b5cf6' }}>🧹 Log Exorcist</span>
-              <span style={{ background: 'rgba(16, 185, 129, 0.2)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#10b981' }}>🧠 Code Monk</span>
+              <span style={{ background: 'rgba(234, 67, 53, 0.12)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#EA4335' }}>🧙 Refactor Wizard</span>
+              <span style={{ background: 'rgba(66, 133, 244, 0.12)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#4285F4' }}>🐛 Bug Hunter</span>
+              <span style={{ background: 'rgba(251, 188, 5, 0.15)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#b58500' }}>🧹 Log Exorcist</span>
+              <span style={{ background: 'rgba(52, 168, 83, 0.12)', padding: '0.4rem 0.8rem', borderRadius: '8px', fontSize: '0.85rem', color: '#34A853' }}>🧠 Code Monk</span>
             </div>
             
             <h3 className="section-title" style={{ marginTop: '2rem' }}>Recent Events</h3>
             <ul style={{ listStyle: 'none', marginTop: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <li><span style={{ color: '#10b981', fontWeight: 'bold' }}>+3</span> Featherweight Function</li>
-                <li><span style={{ color: '#f43f5e', fontWeight: 'bold' }}>-2</span> Console Log Panic</li>
-                <li><span style={{ color: '#10b981', fontWeight: 'bold' }}>+4</span> Guard Clause Master</li>
+                <li><span style={{ color: '#34A853', fontWeight: 'bold' }}>+3</span> Featherweight Function</li>
+                <li><span style={{ color: '#EA4335', fontWeight: 'bold' }}>-2</span> Console Log Panic</li>
+                <li><span style={{ color: '#34A853', fontWeight: 'bold' }}>+4</span> Guard Clause Master</li>
             </ul>
           </div>
         </div>
