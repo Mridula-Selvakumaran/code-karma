@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { RuleEngine } from './ruleEngine';
+import { PythonRuleEngine } from './pythonRuleEngine';
 import { KarmaEngine } from './karmaEngine';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -7,6 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     const karmaEngine = new KarmaEngine(context);
     const ruleEngine = new RuleEngine(karmaEngine);
+    const pythonRuleEngine = new PythonRuleEngine(karmaEngine);
 
     // Command to show dashboard
     let disposable = vscode.commands.registerCommand('code-karma.showDashboard', () => {
@@ -17,16 +19,18 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(disposable);
 
-    // Listen to document saves
+    // Listen to document saves — JS, TS, JSX, TSX, and Python
     vscode.workspace.onDidSaveTextDocument((document) => {
-        if (document.languageId === 'javascript' || document.languageId === 'typescript') {
+        const lang = document.languageId;
+        if (lang === 'javascript' || lang === 'typescript' ||
+            lang === 'javascriptreact' || lang === 'typescriptreact') {
             ruleEngine.analyzeDocument(document);
+            karmaEngine.notifyChanges();
+        } else if (lang === 'python') {
+            pythonRuleEngine.analyzeDocument(document);
             karmaEngine.notifyChanges();
         }
     });
-
-    // We can also run an initial scan
-    // ruleEngine.scanWorkspace();
 }
 
 export function deactivate() {}
