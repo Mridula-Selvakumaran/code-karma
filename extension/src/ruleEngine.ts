@@ -145,7 +145,9 @@ export class RuleEngine {
             // ================================================================
             // APPLY KARMA — Existing Rules
             // ================================================================
-            if (consoleLogCount > 0) {
+            const config = vscode.workspace.getConfiguration('codeKarma.rules');
+            
+            if (consoleLogCount > 0 && config.get<boolean>('enableConsoleLogPenalty', true)) {
                 this.karmaEngine.addKarma(-2 * consoleLogCount, `Logging is not debugging. (-${2 * consoleLogCount} Karma)`);
             }
             if (largeFunctions > 0) {
@@ -193,9 +195,11 @@ export class RuleEngine {
             }
 
             // Regex: JSDoc comments
-            const jsdocMatches = text.match(/\/\*\*[\s\S]*?\*\//g);
-            if (jsdocMatches) {
-                this.karmaEngine.addKarma(3 * jsdocMatches.length, `Documented code. Future devs thank you. (+${3 * jsdocMatches.length} Karma)`);
+            if (config.get<boolean>('enableCommentRule', true)) {
+                const jsdocMatches = text.match(/\/\*\*[\s\S]*?\*\//g);
+                if (jsdocMatches) {
+                    this.karmaEngine.addKarma(3 * jsdocMatches.length, `Documented code. Future devs thank you. (+${3 * jsdocMatches.length} Karma)`);
+                }
             }
 
             // ================================================================

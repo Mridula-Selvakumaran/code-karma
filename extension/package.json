@@ -1,8 +1,13 @@
 {
   "name": "code-karma",
   "displayName": "Code Karma",
+  "publisher": "mksho",
   "description": "Gamify code quality and track developer karma.",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mksho/code-karma.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -19,7 +24,27 @@
         "command": "code-karma.showDashboard",
         "title": "Code Karma: Show Dashboard"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Code Karma",
+      "properties": {
+        "codeKarma.rules.enableCommentRule": {
+          "type": "boolean",
+          "default": true,
+          "description": "Award points for adding comments, or penalize for removing them."
+        },
+        "codeKarma.rules.enableConsoleLogPenalty": {
+          "type": "boolean",
+          "default": true,
+          "description": "Penalize points for leaving console.log statements in your code."
+        },
+        "codeKarma.rules.cooldownMinutes": {
+          "type": "number",
+          "default": 3,
+          "description": "Minutes to wait before another save on the same file can earn or lose karma (anti-spam)."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

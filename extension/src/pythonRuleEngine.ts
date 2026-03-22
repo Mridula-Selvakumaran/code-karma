@@ -107,7 +107,9 @@ export class PythonRuleEngine {
         // ================================================================
         // APPLY KARMA — Positives
         // ================================================================
-        if (docstringCount > 0) {
+        const config = vscode.workspace.getConfiguration('codeKarma.rules');
+        
+        if (docstringCount > 0 && config.get<boolean>('enableCommentRule', true)) {
             this.karmaEngine.addKarma(3 * docstringCount, `Docstrings found. Your code explains itself. (+${3 * docstringCount} Karma)`);
         }
         if (typeHintCount > 0) {

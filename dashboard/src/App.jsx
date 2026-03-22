@@ -1,45 +1,90 @@
 import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 import './index.css'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://csdfojbgaorngheedngw.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_HwpvgnP_IN9-BSFVtvIp4w_e6p9ia-L';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function App() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { width, height } = useWindowSize();
+  
+  // Check URL parameters for celebration
+  const queryParams = new URLSearchParams(window.location.search);
+  const isCelebrating = queryParams.get('celebrate') === 'true';
+  const newRank = queryParams.get('rank') || '';
+  const [showConfetti, setShowConfetti] = useState(isCelebrating);
+
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => setShowConfetti(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti]);
 
   // Pseudo current user for demonstration
   const currentUser = {
     username: 'mksho',
     score: 182,
-    rank: 'Refactor Champion',
+    rank: 'Debug Knight',
     avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=mksho'
   };
 
   const mockData = [
     currentUser,
-    { username: 'diana_debug', score: 850, rank: 'Code Deity', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=diana_debug' },
-    { username: 'alice_dev', score: 420, rank: 'Architecture Sage', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alice_dev' },
+    { username: 'diana_debug', score: 1350, rank: 'Code Deity', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=diana_debug' },
+    { username: 'eve_expert', score: 900, rank: 'Code Guru', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=eve_expert' },
+    { username: 'alice_dev', score: 620, rank: 'Architecture Sage', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=alice_dev' },
     { username: 'bob_coder', score: 315, rank: 'Refactor Champion', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=bob_coder' },
-    { username: 'charlie_hacks', score: 40, rank: 'Code Wanderer', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=charlie_hacks' },
+    { username: 'charlie_hacks', score: 80, rank: 'Syntax Squire', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=charlie_hacks' },
+    { username: 'dave_noob', score: 10, rank: 'Code Wanderer', avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=dave_noob' },
   ];
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/leaderboard')
-      .then(res => res.json())
-      .then(data => {
-        setLeaderboard(data.data.sort((a, b) => b.score - a.score));
-        setLoading(false);
-      })
-      .catch(() => {
-        // Backend not running — fall back to mock data so UI always works
+    const fetchLeaderboard = async () => {
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .order('score', { ascending: false });
+
+      if (error || !data || data.length === 0) {
         setLeaderboard(mockData.sort((a, b) => b.score - a.score));
-        setLoading(false);
-      });
+      } else {
+        setLeaderboard(data);
+      }
+      setLoading(false);
+    };
+
+    fetchLeaderboard();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leaderboard' },
+        (payload) => {
+          fetchLeaderboard();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
     <div className="app-container">
+      {showConfetti && <Confetti width={width} height={height} recycle={false} numberOfPieces={500} />}
       <header>
         <h1>Code Karma</h1>
         <p className="subtitle">Elevating Engineering Discipline</p>
+        {showConfetti && <h2 style={{ color: '#f59e0b', margin: '1rem 0' }}>🎉 Congratulations on reaching {newRank}! 🎉</h2>}
       </header>
 
       <main className="dashboard-grid">

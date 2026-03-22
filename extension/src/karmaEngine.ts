@@ -1,14 +1,16 @@
 import * as vscode from 'vscode';
-import * as http from 'http';
+import * as https from 'https';
 import * as os from 'os';
 
-// Rank thresholds (must match backend getRank())
+// Rank thresholds
 const RANKS = [
-    { min: 800, label: 'Code Deity',         icon: '👑' },
-    { min: 400, label: 'Architecture Sage',  icon: '🏛️' },
-    { min: 150, label: 'Refactor Champion',  icon: '🏆' },
-    { min: 50,  label: 'Debug Knight',       icon: '🛡️' },
-    { min: 0,   label: 'Code Wanderer',      icon: '🌿' },
+    { min: 1200, label: 'Code Deity',         icon: '👑' },
+    { min: 800,  label: 'Code Guru',          icon: '🧘‍♂️' },
+    { min: 500,  label: 'Architecture Sage',  icon: '🏛️' },
+    { min: 300,  label: 'Refactor Champion',  icon: '🏆' },
+    { min: 150,  label: 'Debug Knight',       icon: '🛡️' },
+    { min: 50,   label: 'Syntax Squire',      icon: '⚔️' },
+    { min: 0,    label: 'Code Wanderer',      icon: '🌿' },
 ];
 
 function getRank(score: number): { label: string; icon: string } {
@@ -21,11 +23,17 @@ export class KarmaEngine {
     private pendingDelta: number = 0;
     private currentRank: string = '';
     private statusBarItem: vscode.StatusBarItem;
+    
+    // New Advanced Features State
+    private username: string = '';
+    private lastSyncedKarma: number = 0;
+    private fileCooldowns: Map<string, number> = new Map();
 
     constructor(private context: vscode.ExtensionContext) {
         // Load persisted state
         this.currentKarma = this.context.workspaceState.get<number>('codeKarma.score', 0);
         this.achievements = this.context.workspaceState.get<string[]>('codeKarma.achievements', []);
+        this.lastSyncedKarma = this.context.globalState.get<number>('codeKarma.lastSyncedKarma', 0);
         this.currentRank = getRank(this.currentKarma).label;
 
         // Create status bar item (left-aligned, high priority)
@@ -37,6 +45,32 @@ export class KarmaEngine {
 
         // Register it for cleanup on extension deactivate
         context.subscriptions.push(this.statusBarItem);
+    }
+
+    public async init() {
+        let storedUser = this.context.globalState.get<string>('codeKarma.username');
+        if (!storedUser) {
+            storedUser = await vscode.window.showInputBox({
+                prompt: 'Choose a unique username for the global Code Karma leaderboard!',
+                placeHolder: os.userInfo().username,
+                ignoreFocusOut: true
+            }) || os.userInfo().username;
+            await this.context.globalState.update('codeKarma.username', storedUser);
+        }
+        this.username = storedUser;
+    }
+
+    public isOnCooldown(fileName: string): boolean {
+        const cooldownMinutes = vscode.workspace.getConfiguration('codeKarma.rules').get<number>('cooldownMinutes', 3);
+        const lastSaved = this.fileCooldowns.get(fileName) || 0;
+        const now = Date.now();
+        
+        if (now - lastSaved < cooldownMinutes * 60 * 1000) {
+            return true;
+        }
+        
+        this.fileCooldowns.set(fileName, now);
+        return false;
     }
 
     private updateStatusBar() {
@@ -62,16 +96,15 @@ export class KarmaEngine {
             vscode.window.showWarningMessage(`${amount} Karma: ${reason}. Total: ${this.currentKarma}`);
         }
 
-        // Check for rank-up
         const newRank = getRank(this.currentKarma).label;
         if (newRank !== previousRank && this.currentKarma > 0) {
             const { icon } = getRank(this.currentKarma);
             vscode.window.showInformationMessage(
-                `🎉 Rank Up! You are now a ${icon} ${newRank}!`,
-                'Open Dashboard'
+                `🎉🎊 RANK UP! 🎊🎉 You have ascended to ${icon} ${newRank}! Your discipline is legendary.`,
+                'Celebrate!'
             ).then(selection => {
-                if (selection === 'Open Dashboard') {
-                    vscode.env.openExternal(vscode.Uri.parse('http://localhost:5173'));
+                if (selection === 'Celebrate!') {
+                    vscode.env.openExternal(vscode.Uri.parse(`http://localhost:5173/?celebrate=true&rank=${encodeURIComponent(newRank)}`));
                 }
             });
             this.currentRank = newRank;
@@ -83,33 +116,40 @@ export class KarmaEngine {
     }
 
     public notifyChanges() {
-        if (this.pendingDelta === 0) {
-            return;
+        if (this.currentKarma === this.lastSyncedKarma) {
+            return; // No new points to sync
         }
 
-        const username = os.userInfo().username;
-        const scoreDelta = this.pendingDelta;
-        this.pendingDelta = 0;
+        const score = this.currentKarma;
+        const rank = getRank(this.currentKarma).label;
+        const avatar = `https://api.dicebear.com/7.x/bottts/svg?seed=${this.username}`;
 
-        const payload = JSON.stringify({ username, scoreDelta });
+        const payload = JSON.stringify({ username: this.username, score, rank, avatar });
 
-        const options: http.RequestOptions = {
-            hostname: 'localhost',
-            port: 3000,
-            path: '/api/karma',
+        const options = {
+            hostname: 'csdfojbgaorngheedngw.supabase.co',
+            port: 443,
+            path: '/rest/v1/leaderboard?on_conflict=username',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'apikey': 'sb_publishable_HwpvgnP_IN9-BSFVtvIp4w_e6p9ia-L',
+                'Authorization': `Bearer sb_publishable_HwpvgnP_IN9-BSFVtvIp4w_e6p9ia-L`,
+                'Prefer': 'resolution=merge-duplicates',
                 'Content-Length': Buffer.byteLength(payload)
             }
         };
 
-        const req = http.request(options, (_res) => {
-            // Karma synced to backend successfully
+        const req = https.request(options, (res) => {
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                // Successfully synced! Update local cache so we don't duplicate efforts
+                this.lastSyncedKarma = score;
+                this.context.globalState.update('codeKarma.lastSyncedKarma', score);
+            }
         });
 
-        req.on('error', () => {
-            // Backend not running — fail silently, local state is still saved
+        req.on('error', (e) => {
+            console.error('Failed to update Supabase, will retry on next save:', e.message);
         });
 
         req.write(payload);
